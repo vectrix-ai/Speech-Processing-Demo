@@ -92,6 +92,7 @@ try:
         del audio_bytes
 
 except Exception as e:
+    print(e)
     st.error("Please upload an audio file.")
 
                      
