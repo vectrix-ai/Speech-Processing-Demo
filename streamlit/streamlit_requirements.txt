@@ -1,0 +1,6 @@
+ipython
+streamlit
+audio_recorder_streamlit
+openai
+google-cloud-aiplatform
+numpy
