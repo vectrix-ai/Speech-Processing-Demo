@@ -29,14 +29,12 @@ st.audio(audio_bytes, format="audio/wav")
 
     
 
-prompt = '''Task: Please read the provided transcript and extract the key takeaways. Your summary should include:
+prompt = '''Task: Gelieve het bijgevoegde transcript te lezen en volgende drie tabellen aan te vullen.
+- Aanwizige compressors
+- Het energiecontract
+- Mobiliteit
 
-The main topics discussed in the podcast.
-Any significant opinions, findings, or conclusions presented by the speakers.
-Important facts or data mentioned.
-Notable quotes or statements.
-The overall theme or message of the podcast.
-Output: Provide a concise and informative summary capturing the essence of the podcast, focusing on the points listed above.'''
+De tabellen mogen in markdown formaat worden aangeleverd.'''
 
 st.subheader('Gemini Model Instructions')
 # Add a text input widget
@@ -64,15 +62,28 @@ try:
             st.write('Summerizing audio using Gemini ...')
             llm_input = "Input: " + transcript + "\n\n" + model_instruction
 
-            gemini_pro_model = GenerativeModel("gemini-pro")
-            model_response = gemini_pro_model.generate_content(llm_input)
+            client = OpenAI()
+
+            model_response = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": llm_input,
+                    }
+                ],
+                model="gpt-4",
+            )
+
+            #gemini_pro_model = GenerativeModel("gemini-pro")
+            #model_response = gemini_pro_model.generate_content(llm_input)
 
             st.write("Running Text-to-Speech pipeline ...")
         
+            
             response = client.audio.speech.create(
                 model="tts-1",
                 voice="alloy",
-                input=model_response.candidates[0].content.parts[0].text
+                input=model_response.choices[0].message.content
             )
 
             audio_file = f"./tmp/{uuid.uuid4()}.mp3"
@@ -82,8 +93,7 @@ try:
         st.success(transcript)
 
         st.subheader('Gemini Output')
-        st.success(model_response.candidates[0].content.parts[0].text)    
-
+        st.success(model_response.choices[0].message.content)
         st.subheader('Text To Speech Output')   
         st.audio(audio_file, format="audio/mp3")
         os.remove(audio_file)
